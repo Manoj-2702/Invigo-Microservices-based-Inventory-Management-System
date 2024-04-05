@@ -2,8 +2,7 @@ version: '3'
 services:
   rabbitmq:
     build: 
-      context: .
-      dockerfile: rabbitmq/Dockerfile
+      context: /rabbitmq/Dockerfile
     ports:
       - "5672:5672"
     networks:
@@ -11,8 +10,7 @@ services:
 
   producer:
     build:
-      context: .
-      dockerfile: producer/Dockerfile
+      context: /producer/Dockerfile
     ports:
       - "5000:5000"
     depends_on:
@@ -22,8 +20,7 @@ services:
 
   consumer_one:
     build:
-      context: .
-      dockerfile: consumer_one/Dockerfile
+      context: /consumer_one/Dockerfile
     depends_on:
       - rabbitmq
     networks:
@@ -31,8 +28,7 @@ services:
 
   consumer_two:
     build:
-      context: .
-      dockerfile: consumer_two/Dockerfile
+      context: /consumer_two/Dockerfile
     depends_on:
       - rabbitmq
     networks:
@@ -40,8 +36,7 @@ services:
 
   consumer_three:
     build:
-      context: .
-      dockerfile: consumer_three/Dockerfile
+      context: /consumer_three/Dockerfile
     depends_on:
       - rabbitmq
     networks:
@@ -49,13 +44,11 @@ services:
 
   consumer_four:
     build:
-      context: .
-      dockerfile: consumer_four/Dockerfile
+      context: ./consumer_four/Dockerfile
     depends_on:
       - rabbitmq
     networks:
       - inventory-net
-
 
 networks:
   inventory-net:
