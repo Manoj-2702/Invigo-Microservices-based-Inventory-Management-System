@@ -1,0 +1,62 @@
+version: '3'
+services:
+  rabbitmq:
+    build: 
+      context: .
+      dockerfile: rabbitmq/Dockerfile
+    ports:
+      - "5672:5672"
+    networks:
+      - inventory-net
+
+  producer:
+    build:
+      context: .
+      dockerfile: producer/Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - rabbitmq
+    networks:
+      - inventory-net
+
+  consumer_one:
+    build:
+      context: .
+      dockerfile: consumer_one/Dockerfile
+    depends_on:
+      - rabbitmq
+    networks:
+      - inventory-net
+
+  consumer_two:
+    build:
+      context: .
+      dockerfile: consumer_two/Dockerfile
+    depends_on:
+      - rabbitmq
+    networks:
+      - inventory-net
+
+  consumer_three:
+    build:
+      context: .
+      dockerfile: consumer_three/Dockerfile
+    depends_on:
+      - rabbitmq
+    networks:
+      - inventory-net
+
+  consumer_four:
+    build:
+      context: .
+      dockerfile: consumer_four/Dockerfile
+    depends_on:
+      - rabbitmq
+    networks:
+      - inventory-net
+
+
+networks:
+  inventory-net:
+    driver: bridge
