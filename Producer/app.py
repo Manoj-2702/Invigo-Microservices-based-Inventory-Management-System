@@ -68,13 +68,17 @@ def create_item():
 @app.route('/insert_record_actually', methods=['POST'])
 def insert_record_actually():
     data = request.get_json()
-    name = data.get('name')
-    srn = data.get('srn')
-    section = data.get('section')
-    message = json.dumps({'name': name, 'srn': srn, 'section': section})
-    logging.info(message)
-    # Publish message to insert_record queue
-    channel.basic_publish(exchange='microservices', routing_key='create_item', body=message)
+    if data:
+        name = data.get('name')
+        srn = data.get('srn')
+        section = data.get('section')
+        message = json.dumps({'name': name, 'srn': srn, 'section': section})
+        logging.info(message)
+        # Publish message to insert_record queue
+        channel.basic_publish(exchange='microservices', routing_key='create_item', body=message)
+        return 'Record Inserted Successfully!'
+    else:
+        return 'Error: No data received', 400
 
     return render_template('insert.html', message='Record Inserted Successfully!')
 
