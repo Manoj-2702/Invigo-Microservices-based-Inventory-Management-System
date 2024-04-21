@@ -1,18 +1,42 @@
+import json
+import logging
+import pymongo
 import pika
 
-# RabbitMQ connection
-rabbitmq_host = 'rabbitmq'
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbitmq_host))
+# Connect to MongoDB database
+client = pymongo.MongoClient("mongodb://mongodb:27017/")
+db = client["database"]
+collection = db["ccdb"]
+
+# RabbitMQ setup
+credentials = pika.PlainCredentials(username='guest', password='guest')
+parameters = pika.ConnectionParameters(host='rabbitmq', port=5672, credentials=credentials)
+connection = pika.BlockingConnection(parameters=parameters)
 channel = connection.channel()
 
-# Declare RabbitMQ queue
-queue_name = 'inventory_queue'
-channel.queue_declare(queue=queue_name)
 
+# Declare the "insert_record" queue
+channel.queue_declare(queue='create_item', durable=True)
+
+# Define a callback function to handle incoming messages
 def callback(ch, method, properties, body):
-    print(f"Item creation: {body}")
+    # Parse incoming message
+    body = body.decode()
+    body = json.loads(body)
+    # message = json.loads(body)
 
-channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+    record = {
+        "name": body['name'],
+        "srn": body['srn'],
+        "section": body['section'],
+    }
+    collection.insert_one(record)
 
-print('Item creation consumer started. Waiting for messages...')
+    # Acknowledge the message
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+# Start consuming messages from the "insert_record" queue
+channel.basic_consume(queue='create_item', on_message_callback=callback)
+
+print('Waiting for messages...')
 channel.start_consuming()

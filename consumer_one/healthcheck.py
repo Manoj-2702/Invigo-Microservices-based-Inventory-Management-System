@@ -1,18 +1,35 @@
-import pika
+'''
+For the consumer_one (health_check):
 
-# RabbitMQ connection
-rabbitmq_host = 'rabbitmq'
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbitmq_host))
+RabbitMQ Client to listen for incoming requests on the “health_check” queue and process it.
+
+This consumer must acknowledge that the health-check message has been listened to through the “health_check” queue. (Simple Ack)
+'''
+
+import pika
+import time
+
+# RabbitMQ setup
+credentials = pika.PlainCredentials(username='guest', password='guest')
+parameters = pika.ConnectionParameters(host='rabbitmq', port=5672, credentials=credentials)
+connection = pika.BlockingConnection(parameters=parameters)
 channel = connection.channel()
 
-# Declare RabbitMQ queue
-queue_name = 'inventory_queue'
-channel.queue_declare(queue=queue_name)
+# Declare the queue
+channel.queue_declare(
+    queue='health_check',
+    durable=True
+)
 
+# Callback function
 def callback(ch, method, properties, body):
-    print(f"Health check: {body}")
+    print(" [x] Received %r" % body)
+    time.sleep(body.count(b'.'))
+    print(" [x] Done")
+    ch.basic_ack(delivery_tag = method.delivery_tag)
 
-channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+# Consume the queue
+channel.basic_consume(queue='health_check', on_message_callback=callback)
 
-print('Health check consumer started. Waiting for messages...')
+print(' [*] Waiting for messages. To exit press CTRL+C')
 channel.start_consuming()

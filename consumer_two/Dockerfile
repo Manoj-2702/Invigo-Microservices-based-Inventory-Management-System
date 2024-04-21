@@ -1,11 +1,8 @@
-FROM python:3.9-slim
+FROM python:3.9-slim-buster
 
 WORKDIR /app
 
-COPY requirements.txt .
-
+COPY . .
 RUN pip install -r requirements.txt
 
-COPY item_creation.py .
-
-CMD ["python", "item_creation.py"]
+CMD ["python3", "item_creation.py"]

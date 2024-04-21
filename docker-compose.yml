@@ -1,55 +1,112 @@
-version: '3'
-services:
-  rabbitmq:
-    build: 
-      context: /rabbitmq/Dockerfile
-    ports:
-      - "5672:5672"
-    networks:
-      - inventory-net
+version: "3.8"
 
-  producer:
-    build:
-      context: /producer/Dockerfile
-    ports:
-      - "5000:5000"
-    depends_on:
-      - rabbitmq
-    networks:
-      - inventory-net
-
-  consumer_one:
-    build:
-      context: /consumer_one/Dockerfile
-    depends_on:
-      - rabbitmq
-    networks:
-      - inventory-net
-
-  consumer_two:
-    build:
-      context: /consumer_two/Dockerfile
-    depends_on:
-      - rabbitmq
-    networks:
-      - inventory-net
-
-  consumer_three:
-    build:
-      context: /consumer_three/Dockerfile
-    depends_on:
-      - rabbitmq
-    networks:
-      - inventory-net
-
-  consumer_four:
-    build:
-      context: ./consumer_four/Dockerfile
-    depends_on:
-      - rabbitmq
-    networks:
-      - inventory-net
+volumes:
+  mongodata:
 
 networks:
-  inventory-net:
+  prodcon_network:
     driver: bridge
+  # rabbitmq_network:
+  #   driver: bridge
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    ports:
+      - "15672:15672" # For RabbitMQ management interface
+      - "5672:5672" # For RabbitMQ message broker
+      # - "25672:25672" # For RabbitMQ clustering
+    healthcheck:
+      # test: rabbitmq-diagnostics -q ping
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      - prodcon_network
+
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    restart: always
+    logging:
+      driver: none
+    # command: mongod --auth
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: user
+    #   MONGO_INITDB_ROOT_PASSWORD: pass
+    #   MONGO_INITDB_DATABASE: database
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - prodcon_network
+
+  producer:
+    build: Producer/
+    ports:
+      - "5000:5000" # For Flask server
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+    networks:
+      - prodcon_network
+
+  consumer_health_check:
+    # build: ./consumer
+    build: Consumer_one/
+    # command: python3 health_check.py
+    depends_on:
+      producer:
+        condition: service_started
+    networks:
+      - prodcon_network
+
+  consumer_insert_record:
+    build: Consumer_two/
+    # command: python3 insert_record.py
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    # environment:
+    #   MONGODB_DATABASE: database
+    #   MONGODB_USERNAME: user
+    #   MONGODB_PASSWORD: pass
+    #   MONGODB_HOSTNAME: mongodb
+    networks:
+      - prodcon_network
+
+  consumer_delete_record:
+    build: Consumer_three/
+    # command: python3 delete_record.py
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - prodcon_network
+
+  consumer_read_database:
+    build: Consumer_four/
+    command: python3 order_processing.py
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    # environment:
+    #   MONGODB_DATABASE: database
+    #   MONGODB_USERNAME: user
+    #   MONGODB_PASSWORD: pass
+    #   MONGODB_HOSTNAME: mongodb
+    networks:
+      - prodcon_network

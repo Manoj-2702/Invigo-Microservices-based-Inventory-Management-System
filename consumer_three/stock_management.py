@@ -1,18 +1,30 @@
 import pika
+import json
+import pymongo
 
-# RabbitMQ connection
-rabbitmq_host = 'rabbitmq'
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbitmq_host))
+# Connect to MongoDB
+client = pymongo.MongoClient("mongodb://mongodb:27017/")
+db = client["database"]
+collection = db["ccdb"]
+
+# RabbitMQ Connection
+credentials = pika.PlainCredentials(username='guest', password='guest')
+parameters = pika.ConnectionParameters(host='rabbitmq', port=5672, credentials=credentials)
+connection = pika.BlockingConnection(parameters=parameters)
 channel = connection.channel()
 
-# Declare RabbitMQ queue
-queue_name = 'inventory_queue'
-channel.queue_declare(queue=queue_name)
+# Declare the queue
+channel.queue_declare(queue='stock_management', durable=True)
 
+# Define callback function
 def callback(ch, method, properties, body):
-    print(f"Stock management: {body}")
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+    srn = body.decode()
+    collection.delete_one({'srn': srn})
 
-channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+# Start consuming from the queue
+channel.basic_consume(queue='stock_management', on_message_callback=callback)
 
-print('Stock management consumer started. Waiting for messages...')
+# Wait for messages
+print(' [*] Waiting for messages. To exit press CTRL+C')
 channel.start_consuming()
