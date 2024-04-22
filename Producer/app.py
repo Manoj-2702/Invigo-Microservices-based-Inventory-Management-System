@@ -1,6 +1,7 @@
 import logging
 import time
 from flask import Flask, request, render_template
+from flask_cors import CORS
 import pika
 import json
 
@@ -8,6 +9,7 @@ app = Flask(
     __name__,
     template_folder='templates'
 )
+CORS(app)
 
 # RabbitMQ setup
 credentials = pika.PlainCredentials(username='guest', password='guest')
@@ -111,11 +113,11 @@ def read_database_actually():
     channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
     if method_frame:
-        records = body.decode()
+        records = json.loads(body.decode())
     else:
-        records = {}
+        records = []
 
-    return records
+    return json.dumps(records)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

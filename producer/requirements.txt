@@ -1,3 +1,4 @@
 flask
 pika
 pymongo
+flask-cors

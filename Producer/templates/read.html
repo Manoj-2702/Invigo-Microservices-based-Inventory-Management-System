@@ -26,16 +26,12 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script>
         window.addEventListener('load', function () {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'http://localhost:5000/read_database_actually');
-            xhr.responseType = 'json';
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    var data = xhr.response;
-                    console.log(data);
-                    for (var i = 1; i < data.length; i++) {
+            fetch('http://localhost:5000/read_database_actually')
+                .then(response => response.text())
+                .then(data => {
+                    const records = JSON.parse(data);
+                    records.forEach(record => {
                         var tr = document.createElement('tr');
-                        var record = data[i];
                         var td1 = document.createElement('td');
                         td1.textContent = record.name;
                         tr.appendChild(td1);
@@ -46,10 +42,9 @@
                         td3.textContent = record.section;
                         tr.appendChild(td3);
                         document.getElementById('records-table-body').appendChild(tr);
-                    }
-                }
-            };
-            xhr.send();
+                    });
+                })
+                .catch(error => console.error('Error:', error));
         });
     </script>
 </body>

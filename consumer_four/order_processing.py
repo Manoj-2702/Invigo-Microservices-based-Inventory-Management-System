@@ -1,6 +1,6 @@
 import pika
 import pymongo
-
+import json
 # RabbitMQ setup
 credentials = pika.PlainCredentials(username='guest', password='guest')
 parameters = pika.ConnectionParameters(host='rabbitmq', port=5672, credentials=credentials)
@@ -26,11 +26,12 @@ channel.queue_bind(exchange='microservices', queue='send_database', routing_key=
 # Define the callback function to process incoming messages
 def callback(ch, method, properties, body):
     # Retrieve all records from the database
-    records = collection.find()
+    records = list(collection.find({}, {'_id': 0}))
+    records_json = json.dumps(records)
     
     # Send each record to the producer through RabbitMQ
     # channel.basic_publish(exchange='microservices', routing_key='send_database', body=str(records))
-    channel.basic_publish(exchange='microservices', routing_key='send_database', body="TEST")
+    channel.basic_publish(exchange='microservices', routing_key='send_database', body=records_json)
 
     # Acknowledge that the message has been processed
     channel.basic_ack(delivery_tag=method.delivery_tag)
