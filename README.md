@@ -29,7 +29,7 @@ To run the Inventory Management System locally, follow these steps:
 
 1. Clone the repository: 
 ```bash
-git clone https://github.com/your-repo/inventory-management.git
+git clone https://github.com/Manoj-2702/dockerproject.git
 ```
 2. Navigate to the project directory:
 ```bash
