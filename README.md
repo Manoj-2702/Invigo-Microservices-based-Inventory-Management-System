@@ -33,7 +33,7 @@ git clone https://github.com/Manoj-2702/dockerproject.git
 ```
 2. Navigate to the project directory:
 ```bash
- cd inventory-management
+ cd dockerproject
 ```
 3. Build and start the containers:
 ```bash
