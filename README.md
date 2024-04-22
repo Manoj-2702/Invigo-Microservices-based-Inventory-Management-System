@@ -1,4 +1,4 @@
-# PES1UG21CS329_PES1UG21CS331_PES1UG21CS338_PES1UG21CS911*-Microservices-communication-using-RabbitMQ
+# PES1UG21CS329_PES1UG21CS331_PES1UG21CS338_PES1UG21CS911-Microservices-communication-using-RabbitMQ
 
 - PES1UG21CS329 - Manoj Kumar HS
 - PES1UG21CS331 - Shriya Marella
@@ -37,7 +37,7 @@ git clone https://github.com/your-repo/inventory-management.git
 ```
 3. Build and start the containers:
 ```bash
- docker-compose up --build
+ docker-compose up
 ```
 4. Once the containers are up and running, you can access the Flask web application at http://localhost:5000.
 
