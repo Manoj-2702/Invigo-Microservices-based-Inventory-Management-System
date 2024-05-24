@@ -1,4 +1,12 @@
-# PES1UG21CS329_PES1UG21CS331_PES1UG21CS338_PES1UG21CS911-Microservices-communication-using-RabbitMQ
+<h1 align="center">Invigo: Simplifying Inventory, Amplifying Efficiency</h1>
+
+<p align="center">
+ <img src="https://github.com/Manoj-2702/329_331_338_911_5/assets/103581128/3aae8858-8272-4093-be8f-e49e554201d3" alt="logo" />
+</p>
+
+
+
+## PES1UG21CS329_PES1UG21CS331_PES1UG21CS338_PES1UG21CS911-Microservices-communication-using-RabbitMQ
 
 - PES1UG21CS329 - Manoj Kumar HS
 - PES1UG21CS331 - Shriya Marella
